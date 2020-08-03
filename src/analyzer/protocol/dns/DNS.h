@@ -356,7 +356,7 @@ typedef enum {
 
 // Support analyzer which chunks the TCP stream into "packets".
 // ### This should be merged with TCP_Contents_RPC.
-class Contents_DNS final : public tcp::TCP_SupportAnalyzer {
+class Contents_DNS final : public zeek::analyzer::tcp::TCP_SupportAnalyzer {
 public:
 	Contents_DNS(zeek::Connection* c, bool orig, DNS_Interpreter* interp);
 	~Contents_DNS() override;
@@ -379,7 +379,7 @@ protected:
 };
 
 // Works for both TCP and UDP.
-class DNS_Analyzer final : public tcp::TCP_ApplicationAnalyzer {
+class DNS_Analyzer final : public zeek::analyzer::tcp::TCP_ApplicationAnalyzer {
 public:
 	explicit DNS_Analyzer(zeek::Connection* conn);
 	~DNS_Analyzer() override;
@@ -389,8 +389,8 @@ public:
 
 	void Init() override;
 	void Done() override;
-	void ConnectionClosed(tcp::TCP_Endpoint* endpoint,
-					tcp::TCP_Endpoint* peer, bool gen_event) override;
+	void ConnectionClosed(zeek::analyzer::tcp::TCP_Endpoint* endpoint,
+	                      zeek::analyzer::tcp::TCP_Endpoint* peer, bool gen_event) override;
 	void ExpireTimer(double t);
 
 	static zeek::analyzer::Analyzer* Instantiate(zeek::Connection* conn)
