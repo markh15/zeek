@@ -733,11 +733,11 @@ unsigned int Dictionary::MemoryAllocation() const
 			{
 			zeek::PList<detail::DictEntry>* chain = tbl[i];
 			for ( const auto& c : *chain )
-				size += padded_sizeof(detail::DictEntry) + pad_size(c->len);
+				size += padded_sizeof(detail::DictEntry) + zeek::util::pad_size(c->len);
 			size += chain->MemoryAllocation();
 			}
 
-	size += pad_size(num_buckets * sizeof(zeek::PList<detail::DictEntry>*));
+	size += zeek::util::pad_size(num_buckets * sizeof(zeek::PList<detail::DictEntry>*));
 
 	if ( order )
 		size += order->MemoryAllocation();
@@ -749,11 +749,11 @@ unsigned int Dictionary::MemoryAllocation() const
 				{
 				zeek::PList<detail::DictEntry>* chain = tbl2[i];
 				for ( const auto& c : *chain )
-					size += padded_sizeof(detail::DictEntry) + pad_size(c->len);
+					size += padded_sizeof(detail::DictEntry) + zeek::util::pad_size(c->len);
 				size += chain->MemoryAllocation();
 				}
 
-		size += pad_size(num_buckets2 * sizeof(zeek::PList<detail::DictEntry>*));
+		size += zeek::util::pad_size(num_buckets2 * sizeof(zeek::PList<detail::DictEntry>*));
 		}
 
 	return size;

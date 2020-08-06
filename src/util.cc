@@ -70,6 +70,10 @@
 
 using namespace std;
 
+extern const char* proc_status_file;
+
+namespace zeek::util {
+
 static bool starts_with(std::string_view s, std::string_view beginning)
 	{
 	if ( beginning.size() > s.size() )
@@ -1065,30 +1069,25 @@ static bool write_random_seeds(const char* write_file, uint32_t seed,
 	return true;
 	}
 
-static bool bro_rand_determistic = false;
-static long int bro_rand_state = 0;
+static bool zeek_rand_determistic = false;
+static long int zeek_rand_state = 0;
 static bool first_seed_saved = false;
 static unsigned int first_seed = 0;
 
-static void bro_srandom(unsigned int seed, bool deterministic)
+static void zeek_srandom(unsigned int seed, bool deterministic)
 	{
-	bro_rand_state = seed == 0 ? 1 : seed;
-	bro_rand_determistic = deterministic;
+	zeek_rand_state = seed == 0 ? 1 : seed;
+	zeek_rand_determistic = deterministic;
 
 	srandom(seed);
 	}
 
-void zeek::seed_random(unsigned int seed)
+void seed_random(unsigned int seed)
 	{
-	if ( bro_rand_determistic )
-		bro_rand_state = seed == 0 ? 1 : seed;
+	if ( zeek_rand_determistic )
+		zeek_rand_state = seed == 0 ? 1 : seed;
 	else
 		srandom(seed);
-	}
-
-void bro_srandom(unsigned int seed)
-	{
-	zeek::seed_random(seed);
 	}
 
 void init_random_seed(const char* read_file, const char* write_file,
@@ -1162,7 +1161,7 @@ void init_random_seed(const char* read_file, const char* write_file,
 			seeds_done = true;
 		}
 
-	bro_srandom(seed, seeds_done);
+	zeek_srandom(seed, seeds_done);
 
 	if ( ! first_seed_saved )
 		{
@@ -1185,18 +1184,18 @@ unsigned int initial_seed()
 
 bool have_random_seed()
 	{
-	return bro_rand_determistic;
+	return zeek_rand_determistic;
 	}
 
 constexpr uint32_t zeek_prng_mod = 2147483647;
 constexpr uint32_t zeek_prng_max = zeek_prng_mod - 1;
 
-long int zeek::max_random()
+long int max_random()
 	{
-	return bro_rand_determistic ? zeek_prng_max : RAND_MAX;
+	return zeek_rand_determistic ? zeek_prng_max : RAND_MAX;
 	}
 
-long int zeek::prng(long int state)
+long int prng(long int state)
 	{
 	// Use our own simple linear congruence PRNG to make sure we are
 	// predictable across platforms.  (Lehmer RNG, Schrage's method)
@@ -1219,24 +1218,14 @@ long int zeek::prng(long int state)
 	return res;
 	}
 
-unsigned int bro_prng(unsigned int  state)
+long int random_number()
 	{
-	return zeek::prng(state);
-	}
-
-long int zeek::random_number()
-	{
-	if ( ! bro_rand_determistic )
+	if ( ! zeek_rand_determistic )
 		return random(); // Use system PRNG.
 
-	bro_rand_state = zeek::prng(bro_rand_state);
+	zeek_rand_state = zeek::util::prng(zeek_rand_state);
 
-	return bro_rand_state;
-	}
-
-long int bro_random()
-	{
-	return zeek::random_number();
+	return zeek_rand_state;
 	}
 
 // Returns a 64-bit random string.
@@ -1246,7 +1235,7 @@ uint64_t rand64bit()
 	int i;
 
 	for ( i = 1; i <= 4; ++i )
-		base = (base<<16) | zeek::random_number();
+		base = (base<<16) | zeek::util::random_number();
 	return base;
 	}
 
@@ -1263,32 +1252,32 @@ int int_list_cmp(const void* v1, const void* v2)
 		return 1;
 	}
 
-static string bro_path_value;
+static string zeek_path_value;
 
-const std::string& bro_path()
+const std::string& zeek_path()
 	{
-	if ( bro_path_value.empty() )
+	if ( zeek_path_value.empty() )
 		{
 		const char* path = zeekenv("ZEEKPATH");
 
 		if ( ! path )
 			path = DEFAULT_ZEEKPATH;
 
-		bro_path_value = path;
+		zeek_path_value = path;
 		}
 
-	return bro_path_value;
+	return zeek_path_value;
 	}
 
-extern void add_to_bro_path(const string& dir)
+extern void add_to_zeek_path(const string& dir)
 	{
 	// Make sure path is initialized.
-	bro_path();
+	zeek_path();
 
-	bro_path_value += string(":") + dir;
+	zeek_path_value += string(":") + dir;
 	}
 
-const char* bro_plugin_path()
+const char* zeek_plugin_path()
 	{
 	const char* path = zeekenv("ZEEK_PLUGIN_PATH");
 
@@ -1298,7 +1287,7 @@ const char* bro_plugin_path()
 	return path;
 	}
 
-const char* bro_plugin_activate()
+const char* zeek_plugin_activate()
 	{
 	const char* names = zeekenv("ZEEK_PLUGIN_ACTIVATE");
 
@@ -1308,7 +1297,7 @@ const char* bro_plugin_activate()
 	return names;
 	}
 
-string bro_prefixes()
+string zeek_prefixes()
 	{
 	string rval;
 
@@ -1365,7 +1354,7 @@ FILE* open_file(const string& path, const string& mode)
 	if ( ! rval )
 		{
 		char buf[256];
-		bro_strerror_r(errno, buf, sizeof(buf));
+		zeek_strerror_r(errno, buf, sizeof(buf));
 		zeek::reporter->Error("Failed to open file %s: %s", filename, buf);
 		}
 
@@ -1458,7 +1447,7 @@ SafeDirname::SafeDirname(const string& path, bool error_aborts)
 
 void SafeDirname::DoFunc(const string& path, bool error_aborts)
 	{
-	char* tmp = copy_string(path.c_str());
+	char* tmp = zeek::util::copy_string(path.c_str());
 	CheckValid(dirname(tmp), tmp, error_aborts);
 	delete [] tmp;
 	}
@@ -1477,7 +1466,7 @@ SafeBasename::SafeBasename(const string& path, bool error_aborts)
 
 void SafeBasename::DoFunc(const string& path, bool error_aborts)
 	{
-	char* tmp = copy_string(path.c_str());
+	char* tmp = zeek::util::copy_string(path.c_str());
 	CheckValid(basename(tmp), tmp, error_aborts);
 	delete [] tmp;
 	}
@@ -1696,11 +1685,11 @@ string normalize_path(std::string_view path)
 	return new_path;
 	}
 
-string without_bropath_component(std::string_view path)
+string without_zeekpath_component(std::string_view path)
 	{
 	string rval = normalize_path(path);
 
-	const auto paths = tokenize_string(bro_path(), ':');
+	const auto paths = tokenize_string(zeek_path(), ':');
 
 	for ( size_t i = 0; i < paths.size(); ++i )
 		{
@@ -1962,7 +1951,6 @@ void terminate_processing()
 		raise(SIGTERM);
 	}
 
-extern const char* proc_status_file;
 void set_processing_status(const char* status, const char* reason)
 	{
 	if ( ! proc_status_file )
@@ -1979,7 +1967,7 @@ void set_processing_status(const char* status, const char* reason)
 	if ( fd < 0 )
 		{
 		char buf[256];
-		bro_strerror_r(errno, buf, sizeof(buf));
+		zeek_strerror_r(errno, buf, sizeof(buf));
 		if ( zeek::reporter )
 			zeek::reporter->Error("Failed to open process status file '%s': %s",
 			                      proc_status_file, buf);
@@ -2116,7 +2104,7 @@ uint64_t calculate_unique_id(size_t pool)
 			gettimeofday(&unique.time, 0);
 			unique.pool = (uint64_t) pool;
 			unique.pid = getpid();
-			unique.rnd = static_cast<int>(zeek::random_number());
+			unique.rnd = static_cast<int>(zeek::util::random_number());
 
 			uid_instance = zeek::detail::HashKey::HashBytes(&unique, sizeof(unique));
 			++uid_instance; // Now it's larger than zero.
@@ -2204,21 +2192,10 @@ void safe_close(int fd)
 	if ( close(fd) < 0 && errno != EINTR )
 		{
 		char buf[128];
-		bro_strerror_r(errno, buf, sizeof(buf));
+		zeek_strerror_r(errno, buf, sizeof(buf));
 		fprintf(stderr, "safe_close error %d: %s\n", errno, buf);
 		abort();
 		}
-	}
-
-extern "C" void out_of_memory(const char* where)
-	{
-	fprintf(stderr, "out of memory in %s.\n", where);
-
-	if ( zeek::reporter )
-		// Guess that might fail here if memory is really tight ...
-		zeek::reporter->FatalError("out of memory in %s.\n", where);
-
-	abort();
 	}
 
 void get_memory_usage(uint64_t* total, uint64_t* malloced)
@@ -2357,9 +2334,9 @@ static void strerror_r_helper(char* result, char* buf, size_t buflen)
 static void strerror_r_helper(int result, char* buf, size_t buflen)
 	{ /* XSI flavor of strerror_r, no-op. */ }
 
-void bro_strerror_r(int bro_errno, char* buf, size_t buflen)
+void zeek_strerror_r(int zeek_errno, char* buf, size_t buflen)
 	{
-	auto res = strerror_r(bro_errno, buf, buflen);
+	auto res = strerror_r(zeek_errno, buf, buflen);
 	// GNU vs. XSI flavors make it harder to use strerror_r.
 	strerror_r_helper(res, buf, buflen);
 	}
@@ -2531,7 +2508,7 @@ string json_escape_utf8(const string& val)
 	return result;
 	}
 
-void zeek::set_thread_name(const char* name, pthread_t tid)
+void set_thread_name(const char* name, pthread_t tid)
 	{
 #ifdef HAVE_LINUX
 	prctl(PR_SET_NAME, name, 0, 0, 0);
@@ -2546,5 +2523,96 @@ void zeek::set_thread_name(const char* name, pthread_t tid)
 #endif
 	}
 
+} // namespace zeek::util
+
 // Remove in v4.1.
 double& network_time = zeek::net::network_time;
+
+unsigned int bro_prng(unsigned int  state)
+	{ return zeek::util::prng(state); }
+
+long int bro_random()
+	{ return zeek::util::random_number(); }
+
+void bro_srandom(unsigned int seed)
+	{ zeek::util::seed_random(seed); }
+
+zeek::ODesc* get_escaped_string(zeek::ODesc* d, const char* str, size_t len, bool escape_all)
+	{ return zeek::util::get_escaped_string(d, str, len, escape_all); }
+std::string get_escaped_string(const char* str, size_t len, bool escape_all)
+	{ return zeek::util::get_escaped_string(str, len, escape_all); }
+std::string get_escaped_string(const std::string& str, bool escape_all)
+	{ return zeek::util::get_escaped_string(str, escape_all); }
+
+std::vector<std::string>* tokenize_string(std::string_view input,
+                                          std::string_view delim,
+                                          std::vector<std::string>* rval, int limit)
+	{ return zeek::util::tokenize_string(input, delim, rval, limit); }
+std::vector<std::string_view> tokenize_string(std::string_view input, const char delim) noexcept
+	{ return zeek::util::tokenize_string(input, delim); }
+
+char* skip_whitespace(char* s)
+	{ return zeek::util::skip_whitespace(s); }
+const char* skip_whitespace(const char* s)
+	{ return zeek::util::skip_whitespace(s); }
+char* skip_whitespace(char* s, char* end_of_s)
+	{ return zeek::util::skip_whitespace(s, end_of_s); }
+const char* skip_whitespace(const char* s, const char* end_of_s)
+	{ return zeek::util::skip_whitespace(s, end_of_s); }
+
+char* get_word(char*& s)
+	{ return zeek::util::get_word(s); }
+void get_word(int length, const char* s, int& pwlen, const char*& pw)
+	{ zeek::util::get_word(length, s, pwlen, pw); }
+void to_upper(char* s)
+	{ zeek::util::to_upper(s); }
+std::string to_upper(const std::string& s)
+	{ return zeek::util::to_upper(s); }
+
+char* uitoa_n(uint64_t value, char* str, int n, int base, const char* prefix)
+	{ return zeek::util::uitoa_n(value, str, n, base, prefix); }
+int fputs(int len, const char* s, FILE* fp)
+	{ return zeek::util::fputs(len, s, fp); }
+
+std::string implode_string_vector(const std::vector<std::string>& v,
+                                  const std::string& delim)
+	{ return zeek::util::implode_string_vector(v, delim); }
+std::string flatten_script_name(const std::string& name,
+                                const std::string& prefix)
+	{ return zeek::util::flatten_script_name(name, prefix); }
+
+std::string find_file(const std::string& filename, const std::string& path_set,
+                      const std::string& opt_ext)
+	{ return zeek::util::find_file(filename, path_set, opt_ext); }
+FILE* open_file(const std::string& path, const std::string& mode)
+	{ return zeek::util::open_file(path, mode); }
+FILE* open_package(std::string& path, const std::string& mode)
+	{ return zeek::util::open_package(path, mode); }
+
+double current_time(bool real)
+	{ return zeek::util::current_time(real); }
+
+uint64_t calculate_unique_id()
+	{ return zeek::util::calculate_unique_id(); }
+uint64_t calculate_unique_id(const size_t pool)
+	{ return zeek::util::calculate_unique_id(pool); }
+
+const array<string, 2>& script_extensions = zeek::util::script_extensions;
+
+namespace zeek {
+
+void set_thread_name(const char* name, pthread_t tid)
+	{ zeek::util::set_thread_name(name, tid); }
+
+} // namespace zeek
+
+extern "C" void out_of_memory(const char* where)
+	{
+	fprintf(stderr, "out of memory in %s.\n", where);
+
+	if ( zeek::reporter )
+		// Guess that might fail here if memory is really tight ...
+		zeek::reporter->FatalError("out of memory in %s.\n", where);
+
+	abort();
+	}

@@ -352,7 +352,7 @@ bool DNS_Interpreter::ParseAnswer(detail::DNS_MsgInfo* msg,
 					msg->BuildAnswerVal()
 				);
 
-			analyzer->Weird("DNS_RR_unknown_type", fmt("%d", msg->atype));
+			analyzer->Weird("DNS_RR_unknown_type", zeek::util::fmt("%d", msg->atype));
 			data += rdlength;
 			len -= rdlength;
 			status = true;
@@ -906,7 +906,7 @@ bool DNS_Interpreter::ParseRR_RRSIG(detail::DNS_MsgInfo* msg,
 
 	switch ( dsa ) {
 		case detail::RSA_MD5:
-			analyzer->Weird("DNSSEC_RRSIG_NotRecommended_ZoneSignAlgo", fmt("%d", algo));
+			analyzer->Weird("DNSSEC_RRSIG_NotRecommended_ZoneSignAlgo", zeek::util::fmt("%d", algo));
 			break;
 		case detail::Diffie_Hellman:
 			break;
@@ -931,16 +931,16 @@ bool DNS_Interpreter::ParseRR_RRSIG(detail::DNS_MsgInfo* msg,
 		case detail::ECDSA_curveP384withSHA384:
 			break;
 		case detail::Indirect:
-			analyzer->Weird("DNSSEC_RRSIG_Indirect_ZoneSignAlgo", fmt("%d", algo));
+			analyzer->Weird("DNSSEC_RRSIG_Indirect_ZoneSignAlgo", zeek::util::fmt("%d", algo));
 			break;
 		case detail::PrivateDNS:
-			analyzer->Weird("DNSSEC_RRSIG_PrivateDNS_ZoneSignAlgo", fmt("%d", algo));
+			analyzer->Weird("DNSSEC_RRSIG_PrivateDNS_ZoneSignAlgo", zeek::util::fmt("%d", algo));
 			break;
 		case detail::PrivateOID:
-			analyzer->Weird("DNSSEC_RRSIG_PrivateOID_ZoneSignAlgo", fmt("%d", algo));
+			analyzer->Weird("DNSSEC_RRSIG_PrivateOID_ZoneSignAlgo", zeek::util::fmt("%d", algo));
 			break;
 		default:
-			analyzer->Weird("DNSSEC_RRSIG_unknown_ZoneSignAlgo", fmt("%d", algo));
+			analyzer->Weird("DNSSEC_RRSIG_unknown_ZoneSignAlgo", zeek::util::fmt("%d", algo));
 			break;
 	}
 
@@ -995,18 +995,18 @@ bool DNS_Interpreter::ParseRR_DNSKEY(detail::DNS_MsgInfo* msg,
 	// flags bit  8: revoked
 	// flags bit 15: Secure Entry Point, key signing key
 	if ( (dflags & 0xfe7e) != 0 )
-		analyzer->Weird("DNSSEC_DNSKEY_Invalid_Flag", fmt("%d", dflags));
+		analyzer->Weird("DNSSEC_DNSKEY_Invalid_Flag", zeek::util::fmt("%d", dflags));
 
 	// flags bit 7, 8, and 15 all set
 	if ( (dflags & 0x0181) == 0x0181 )
-		analyzer->Weird("DNSSEC_DNSKEY_Revoked_KSK", fmt("%d", dflags));
+		analyzer->Weird("DNSSEC_DNSKEY_Revoked_KSK", zeek::util::fmt("%d", dflags));
 
 	if ( dprotocol != 3 )
-		analyzer->Weird("DNSSEC_DNSKEY_Invalid_Protocol", fmt("%d", dprotocol));
+		analyzer->Weird("DNSSEC_DNSKEY_Invalid_Protocol", zeek::util::fmt("%d", dprotocol));
 
 	switch ( dsa ) {
 		case detail::RSA_MD5:
-			analyzer->Weird("DNSSEC_DNSKEY_NotRecommended_ZoneSignAlgo", fmt("%d", dalgorithm));
+			analyzer->Weird("DNSSEC_DNSKEY_NotRecommended_ZoneSignAlgo", zeek::util::fmt("%d", dalgorithm));
 			break;
 		case detail::Diffie_Hellman:
 			break;
@@ -1031,16 +1031,16 @@ bool DNS_Interpreter::ParseRR_DNSKEY(detail::DNS_MsgInfo* msg,
 		case detail::ECDSA_curveP384withSHA384:
 			break;
 		case detail::Indirect:
-			analyzer->Weird("DNSSEC_DNSKEY_Indirect_ZoneSignAlgo", fmt("%d", dalgorithm));
+			analyzer->Weird("DNSSEC_DNSKEY_Indirect_ZoneSignAlgo", zeek::util::fmt("%d", dalgorithm));
 			break;
 		case detail::PrivateDNS:
-			analyzer->Weird("DNSSEC_DNSKEY_PrivateDNS_ZoneSignAlgo", fmt("%d", dalgorithm));
+			analyzer->Weird("DNSSEC_DNSKEY_PrivateDNS_ZoneSignAlgo", zeek::util::fmt("%d", dalgorithm));
 			break;
 		case detail::PrivateOID:
-			analyzer->Weird("DNSSEC_DNSKEY_PrivateOID_ZoneSignAlgo", fmt("%d", dalgorithm));
+			analyzer->Weird("DNSSEC_DNSKEY_PrivateOID_ZoneSignAlgo", zeek::util::fmt("%d", dalgorithm));
 			break;
 		default:
-			analyzer->Weird("DNSSEC_DNSKEY_unknown_ZoneSignAlgo", fmt("%d", dalgorithm));
+			analyzer->Weird("DNSSEC_DNSKEY_unknown_ZoneSignAlgo", zeek::util::fmt("%d", dalgorithm));
 			break;
 	}
 
@@ -1094,7 +1094,7 @@ bool DNS_Interpreter::ParseRR_NSEC(detail::DNS_MsgInfo* msg,
 
 		if ( bmlen == 0 )
 			{
-			analyzer->Weird("DNSSEC_NSEC_bitmapLen0", fmt("%d", win_blck));
+			analyzer->Weird("DNSSEC_NSEC_bitmapLen0", zeek::util::fmt("%d", win_blck));
 			break;
 			}
 
@@ -1169,7 +1169,7 @@ bool DNS_Interpreter::ParseRR_NSEC3(detail::DNS_MsgInfo* msg,
 
 		if ( bmlen == 0 )
 			{
-			analyzer->Weird("DNSSEC_NSEC3_bitmapLen0", fmt("%d", win_blck));
+			analyzer->Weird("DNSSEC_NSEC3_bitmapLen0", zeek::util::fmt("%d", win_blck));
 			break;
 			}
 
@@ -1233,10 +1233,10 @@ bool DNS_Interpreter::ParseRR_DS(detail::DNS_MsgInfo* msg,
 		case detail::SHA384:
 			break;
 		case detail::reserved:
-			analyzer->Weird("DNSSEC_DS_ResrevedDigestType", fmt("%d", ds_dtype));
+			analyzer->Weird("DNSSEC_DS_ResrevedDigestType", zeek::util::fmt("%d", ds_dtype));
 			break;
 		default:
-			analyzer->Weird("DNSSEC_DS_unknown_DigestType", fmt("%d", ds_dtype));
+			analyzer->Weird("DNSSEC_DS_unknown_DigestType", zeek::util::fmt("%d", ds_dtype));
 			break;
 	}
 
@@ -1758,13 +1758,13 @@ void Contents_DNS::ProcessChunk(int& len, const u_char*& data, bool orig)
 			if ( buf_len < msg_size )
 				{
 				buf_len = msg_size;
-				msg_buf = (u_char*) safe_realloc((void*) msg_buf, buf_len);
+				msg_buf = (u_char*) zeek::util::safe_realloc((void*) msg_buf, buf_len);
 				}
 			}
 		else
 			{
 			buf_len = msg_size;
-			msg_buf = (u_char*) safe_malloc(buf_len);
+			msg_buf = (u_char*) zeek::util::safe_malloc(buf_len);
 			}
 
 		++data;
