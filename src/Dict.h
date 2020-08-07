@@ -226,7 +226,7 @@ public:
 		{ return (T*) Remove(key.Key(), key.Size(), key.Hash()); }
 };
 
-} //namespace zeek
+} // namespace zeek
 
 using Dictionary [[deprecated("Remove in v4.1. Use zeek::Dictionary instead.")]] = zeek::Dictionary;
 template<typename T> using PDict [[deprecated("Remove in v4.1. Use zeek::PDict instead.")]] = zeek::PDict<T>;
