@@ -1751,7 +1751,7 @@ string zeek_prefixes()
 	{
 	string rval;
 
-	for ( const auto& prefix : zeek_script_prefixes )
+	for ( const auto& prefix : zeek::detail::zeek_script_prefixes )
 		{
 		if ( ! rval.empty() )
 			rval.append(":");
