@@ -9,7 +9,7 @@ clone:
 
 steps:
 - name: clone
-  image: git
+  image: ubuntu
   commands:
   - git clone git@github.com:markh15/zeek.git .
 
