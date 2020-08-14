@@ -4,12 +4,15 @@ name: zeek
 platform:
   arch: arm64
 
+clone:
+  disable: true
+
 steps:
-- name: submodules
+- name: clone
   image: alpine/git
   commands:
-  - git submodule init
-  - git submodule update --recursive --remote
+  - git clone --recursive https://github.com/zeek/zeek
+  - git checkout $DRONE_COMMIT
   
 steps:
 - name: uname
