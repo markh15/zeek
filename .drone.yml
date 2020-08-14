@@ -9,17 +9,11 @@ steps:
   image: ubuntu/git
   commands:
   - git submodule update --recursive --init
-  
-steps:
-- name: uname
-  image: ubuntu
-  commands:
-  - uname -a
 
 - name: build
-  image: ubuntu
+  image: gcc
   commands:
-  - pwd
-  - ls -l
+  - uname -a
+  - git submodule update --recursive --init
   - ./configure
   - make
