@@ -13,4 +13,5 @@ steps:
 - name: build
   image: ubuntu
   commands:
-  - ./configure && make && sudo make install
+  - configure
+  - make
