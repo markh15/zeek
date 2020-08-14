@@ -11,7 +11,6 @@ steps:
 - name: clone
   image: centos
   commands:
-  - apt-get update && apt-get install -y git
   - git clone git@github.com:markh15/zeek.git .
 
 - name: build
