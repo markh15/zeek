@@ -14,5 +14,6 @@ steps:
   image: ubuntu
   commands:
   - pwd
-  - configure
+  - ls -l
+  - ./configure
   - make
