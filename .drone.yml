@@ -3,12 +3,6 @@ name: zeek
 
 platform:
   arch: arm64
-
-steps:
-- name: submodules
-  image: ubuntu
-  commands:
-  - git submodule update --recursive --init
   
 steps:
 - name: uname
@@ -21,5 +15,6 @@ steps:
   commands:
   - pwd
   - ls -l
+  - cd /drone/src && git submodule update --recursive --init
   - ./configure
   - make
