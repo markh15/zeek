@@ -5,6 +5,12 @@ platform:
   arch: arm64
   
 steps:
+- name: submodules
+  image: ubuntu/git
+  commands:
+  - git submodule update --recursive --init
+  
+steps:
 - name: uname
   image: ubuntu
   commands:
@@ -15,6 +21,5 @@ steps:
   commands:
   - pwd
   - ls -l
-  - cd /drone/src && git submodule update --recursive --init
   - ./configure
   - make
