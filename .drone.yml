@@ -5,6 +5,13 @@ platform:
   arch: arm64
 
 steps:
+- name: submodules
+  image: alpine/git
+  commands:
+  - git submodule init
+  - git submodule update --recursive --remote
+  
+steps:
 - name: uname
   image: ubuntu
   commands:
