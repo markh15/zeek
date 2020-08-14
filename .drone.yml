@@ -6,7 +6,7 @@ platform:
   
 steps:
 - name: submodules
-  image: ubuntu/git
+  image: alpine/git
   commands:
   - git submodule update --recursive --init
 
