@@ -18,6 +18,6 @@ steps:
   image: gcc
   commands:
   - uname -a
-  - `apt-get update && apt-get install cmake
+  - apt-get update && apt-get install cmake
   - ./configure
   - make
