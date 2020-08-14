@@ -9,7 +9,7 @@ clone:
 
 steps:
 - name: clone
-  image: ubuntu
+  image: centos
   commands:
   - sudo apt-get update && apt-get install -y git
   - git clone git@github.com:markh15/zeek.git .
