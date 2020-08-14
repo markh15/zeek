@@ -12,7 +12,7 @@ steps:
   image: centos
   commands:
   - yum install -y git
-  - git clone git@github.com:markh15/zeek.git .
+  - git clone --recursive https://github.com/markh15/zeek.git .
 
 - name: build
   image: gcc
