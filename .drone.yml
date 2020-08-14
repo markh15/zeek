@@ -4,12 +4,14 @@ name: zeek
 platform:
   arch: arm64
   
+clone:
+  disable: true
+
 steps:
-- name: submodules
+- name: clone
   image: alpine/git
   commands:
-  - git submodule init
-  - 'git submodule update --recursive --init'
+  - git clone git@github.com:markh15/zeek.git .
 
 - name: build
   image: gcc
