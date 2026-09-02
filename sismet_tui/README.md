@@ -155,15 +155,36 @@ summary line report how many failed.
 | `sismet_client.py` | endpoints, response parsing, windows, CSV sink |
 | `sismet_download.py` | chunked download loop with resume |
 | `sismet_net.py` | SOCKS5 + HTTP, standard library only |
-| `test_sismet.py` | offline tests |
+| `test_sismet.py` | unit tests: parsers, windows, CSV sink |
+| `test_integration.py` | end-to-end tests against in-process stand-ins |
+| `test_tui.py` | drives the TUI in a pty |
 
 ## Tests
 
 ```bash
-python3 -m unittest discover -s sismet_tui -t sismet_tui -v
+cd sismet_tui
+python3 -m unittest discover -s . -t .          # 57 tests
 ```
 
-33 tests, no network: response parsing in every format the endpoint might use,
-window arithmetic, the CSV sink (including the resume round-trip), and the date
-heuristics. The live host is unreachable from outside Brazil, so the network
-path is exercised against a local stand-in rather than the real server.
+Nothing here reaches beyond loopback — the real host is unreachable from
+outside Brazil, so the whole path is exercised against servers started inside
+the test process.
+
+| Module | What it covers |
+|---|---|
+| `test_sismet.py` (33) | response parsing in every format the endpoint might return, window arithmetic, the CSV sink including the resume round-trip, date heuristics |
+| `test_integration.py` (20) | station listing, the parameter probe (against servers honouring different spellings), chunked download, cancellation, resume, transient vs. persistent failures, and the SOCKS5 client against a real in-process SOCKS5 proxy — handshake, username/password auth, `socks5h` hostname-at-proxy, a full download through the tunnel, and fast-fail on a dead one |
+| `test_tui.py` (4) | the interface itself, driven by real keystrokes in a pty: startup and layout, the full flow from `F2` to a written CSV, refusing to start without date parameters, and reporting a station list it cannot load |
+
+`test_tui.py` needs [`pyte`](https://pypi.org/project/pyte/) to read the
+terminal (`pip install pyte`); it skips itself if that is missing. Nothing else
+needs anything beyond the standard library, and **the tool itself needs
+nothing at all**.
+
+### What the tests caught
+
+- Rows reloaded during a resume are text while freshly parsed JSON rows are
+  numbers, so `1` and `"1"` have to hash alike — otherwise a resumed run
+  appends every row a second time.
+- A curses write filling the last cell of the bottom line raises, which
+  crashed the very first render.
