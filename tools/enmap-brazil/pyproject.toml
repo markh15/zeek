@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "enmap-brazil"
+version = "1.0.0"
+description = "TUI that harvests the EnMAP hyperspectral scene catalogue for Brazil into a queryable SQLite database"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "BSD-3-Clause" }
+dependencies = [
+    "httpx>=0.24",
+    "textual>=0.60",
+]
+
+[project.optional-dependencies]
+parquet = ["pyarrow>=14"]
+dev = ["pytest>=7"]
+
+[project.scripts]
+enmap-br = "enmap_brazil.cli:main"
+
+[tool.setuptools]
+packages = ["enmap_brazil"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
