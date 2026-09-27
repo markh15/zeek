@@ -1,0 +1,11 @@
+pandas>=2.0
+numpy
+requests
+geopandas>=0.14
+shapely>=2.0
+pyproj
+matplotlib>=3.7
+contextily
+mapclassify
+folium>=0.15
+jupyter
